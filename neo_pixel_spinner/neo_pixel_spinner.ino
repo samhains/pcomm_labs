@@ -7,9 +7,11 @@
 // How many NeoPixels are attached to the Arduino?
 #define NUM_LEDS       12
 #define FADE_LENGTH 6
+#define FADE_SCALE 128
+
 CRGB leds[NUM_LEDS];
 
-int i = 0;
+int currentLedIndex = 0;
 int lastState = LOW;
 int total = 0;
 
@@ -43,22 +45,22 @@ void loop() {
   int time = millis();
 
   if(buttonState == HIGH and lastState != HIGH){
-    if (i == NUM_LEDS) {
-      i = 0;
+    if (currentLedIndex == NUM_LEDS) {
+      currentLedIndex = 0;
     }
     total +=1;
-    leds[i].r = 255*sin(total*0.04);
-    leds[i].b = 255*cos(total*0.04);
-    leds[i].g = 255*sin(total*0.08);
+    leds[currentLedIndex].r = 255*sin(total*0.04);
+    leds[currentLedIndex].b = 255*cos(total*0.04);
+    leds[currentLedIndex].g = 255*sin(total*0.08);
 
     for (int shift = 0; shift < FADE_LENGTH; shift++) {
-      int pixelJ = getPixelIndex(i, -shift);
-      leds[pixelJ].nscale8( 128);
+      int pixelFadeIndex = getPixelIndex(currentLedIndex, -shift);
+      leds[pixelFadeIndex].nscale8( FADE_SCALE );
     }
 
     FastLED.show();
 
-    i += 1;
+    currentLedIndex += 1;
     Serial.println(time);
 
 
