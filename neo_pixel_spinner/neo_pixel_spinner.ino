@@ -32,17 +32,17 @@ void setup() {
   }
   FastLED.show();
   pinMode(FIDGET_PIN, INPUT);
-  for (int thisNote = 0; thisNote < NUM_NOTES; thisNote++) {
-
-    // to calculate the note duration, take one second
-    // divided by the note type.
-    //e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
-    int noteDuration = 1000 / noteDurations[thisNote];
-    tone(SPEAKER_PIN, melody[thisNote], noteDuration);
-
-    //pause for the note's duration plus 30 ms:
-    delay(noteDuration + 30);
-  }
+//  for (int thisNote = 0; thisNote < NUM_NOTES; thisNote++) {
+//
+//    // to calculate the note duration, take one second
+//    // divided by the note type.
+//    //e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
+//    int noteDuration = 1000 / noteDurations[thisNote];
+//    tone(SPEAKER_PIN, melody[thisNote], noteDuration);
+//
+//    //pause for the note's duration plus 30 ms:
+//    delay(noteDuration + 30);
+//  }
 }
 
 int getPixelIndex(int current, int shift) {
