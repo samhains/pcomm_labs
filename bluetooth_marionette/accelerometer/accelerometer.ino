@@ -68,10 +68,17 @@ void setup()
   //     ODR_6, or ODR_1.
   //     Sets to 800, 400, 200, 100, 50, 12.5, 6.25, or 1.56 Hz.
   //accel.init(SCALE_8G, ODR_6);
-
+  bluetooth.print("$");  // Print three times individually
+  bluetooth.print("$");
+  bluetooth.print("$");  // Enter command mode
+  delay(100);  // Short delay, wait for the Mate to send back CMD
   bluetooth.println("U,9600,N");  // Temporarily Change the baudrate to 9600, no parity
   // 115200 can be too fast at times for NewSoftSerial to relay the data reliably
+  //bluetooth.println("C,
+
   bluetooth.begin(9600);  // Start bluetooth serial at 9600
+  bluetooth.println("C,201510154325");
+
 }
 
 void printCalculatedAccelsToBluetooth()
@@ -105,16 +112,16 @@ void loop()
     //   are in units of g's.
     // Check the two function declarations below for an example
     // of how to use these variables.
-    printCalculatedAccels();
+    //printCalculatedAccels();
     printCalculatedAccelsToBluetooth();
     //printAccels(); // Uncomment to print digital readings
 
     // The library also supports the portrait/landscape detection
     //  of the MMA8452Q. Check out this function declaration for
     //  an example of how to use that.
-    printOrientation();
+    //printOrientation();
 
-    Serial.println(); // Print new line every time.
+    //Serial.println(); // Print new line every time.
   }
 }
 
