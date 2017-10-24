@@ -28,6 +28,11 @@ int servo_x1_pin = 10;
 int servo_x2_pin = 11;
 int servo_y1_pin = 12;
 int servo_y2_pin = 13;
+int readIndex = 0;              // the index of the current reading
+
+const int numReadings = 10;
+int readings_x[numReadings];
+int readings_y[numReadings];
 
 const byte numChars = 32;
 char receivedChars[numChars]; // an array to store the received data
@@ -35,6 +40,16 @@ char receivedChars[numChars]; // an array to store the received data
 float accel_x = 0.0;
 float accel_y = 0.0;
 float accel_z = 0.0;
+int total_x = 0;
+int total_y = 0;
+
+int servo_rotation_x = 0;
+int servo_rotation_y = 0;
+int avg_servo_rotation_x = 0;
+int avg_servo_rotation_x2 = 0;
+int avg_servo_rotation_y = 0;
+int avg_servo_rotation_y2 = 0;
+
 
 boolean newData = false;
 
@@ -108,30 +123,64 @@ void parseData() {
 //   strtokIndx = strtok(NULL, "\t");
 //   accel_z = atof(strtokIndx);     // convert this part to a float
 // }
+void calculateServoRotationX(){
+     int  accel_int  =  accel_x * 100;
+     int val = map(accel_int, -100, 100, 0, 180);     // scale it to use it with the servo_x1 (value between 0 and 180)
+     servo_rotation_x = constrain(val, 0.0, 180.0);
+}
 
+void calculateServoRotationY(){
+     int  accel_int  =  accel_y * 100;
+     int val = map(accel_int, -100, 100, 0, 180);     // scale it to use it with the servo_x1 (value between 0 and 180)
+     servo_rotation_y = constrain(val, 0.0, 180.0);
+}
 
-  void writeToServo(float accel, Servo servo, int minRange, int maxRange ){
-     //int val = analogRead(servo_x1_pin);            // reads the value of the potentiometer (value between 0 and 1023)
-     int  accel_int  =  accel * 100;
-     int val = map(accel_int, -100, 100, minRange, maxRange);     // scale it to use it with the servo_x1 (value between 0 and 180)
-     val = constrain(val, 0.0, 180.0);
-     Serial.println(val);
-     servo.write(val);                  // sets the servo_x1 position according to the scaled value
-     delay(100);
-  }
+  // void writeToServo(Servo servo, int minRange, int maxRange ){
+  //    //int val = analogRead(servo_x1_pin);            // reads the value of the potentiometer (value between 0 and 1023)
+  //    delay(100);
+  // }
 
   void setup()
   {
     servo_x1.attach(servo_x1_pin);
+
+    for (int thisReading = 0; thisReading < numReadings; thisReading++) {
+      readings_x[thisReading] = 0;
+      readings_y[thisReading] = 0;
+    }
     // servo_x2.attach(servo_x2_pin);
     // servo_y1.attach(servo_y1_pin);
     // servo_y2.attach(servo_y2_pin);
     // Set up both ports at 9600 baud. This value is most important
     // for the XBee. Make sure the baud rate matches the config
-    // setting of your XBee.
+    // setting of your XBee .
     XBee.begin(9600);
     Serial.begin(9600);
 
+  }
+
+  void smoothServoX(){
+    total_x = total_x - readings_x[readIndex];
+    // read from the sensor:
+    readings_x[readIndex] = servo_rotation_x;
+    // add the reading to the total:
+    total_x = total_x + readings_x[readIndex];
+    // advance to the next position in the array:
+    readIndex = readIndex + 1;
+
+    // if we're at the end of the array...
+    if (readIndex >= numReadings) {
+      // ...wrap around to the beginning:
+      readIndex = 0;
+    }
+
+    // calculate the average:
+    avg_servo_rotation_x = total_x / numReadings;
+    // send it to the computer as ASCII digits
+  }
+  void calculateInverseRotations(){
+    avg_servo_rotation_x2 = map(avg_servo_rotation_x,  0,  180, 180, 0);
+    avg_servo_rotation_y2 = map(avg_servo_rotation_y,  0,  180, 180, 0);
   }
 
   void loop()
@@ -145,7 +194,18 @@ void parseData() {
       showNewData();
       // Serial.println(receivedChars);
       parseData();
-      showParsedData();
+      // showParsedData();
+      calculateServoRotationX();
+      calculateServoRotationY();
+      smoothServoX();
+      calculateInverseRotations();
+      Serial.print("x1 ");
+      Serial.print(avg_servo_rotation_x);
+      Serial.print("x2 ");
+      Serial.println(avg_servo_rotation_x2);
+
+      delay(200);
+
       // writeToServo(accel_x, servo_x1, 0, 180);
       // writeToServo(accel_y, servo_y1, 0, 180);
       // writeToServo(accel_x, servo_x2, 180, 0);
