@@ -13,55 +13,57 @@ Hardware Hookup:
 *****************************************************************/
 // We'll use SoftwareSerial to communicate with the XBee:
 #include <SoftwareSerial.h>
-#include <SFE_MMA8452Q.h> // Includes the SFE_MMA8452Q library
+#include "CurieIMU.h"
 
 // XBee's DOUT (TX) is connected to pin 2 (Arduino's Software RX)
 // XBee's DIN (RX) is connected to pin 3 (Arduino's Software TX)
 SoftwareSerial XBee(2, 3); // RX, TX
-MMA8452Q accel;
 
+float ax, ay, az;   //scaled accelerometer values
 
 void setup()
 {
- 
+
   // Set up both ports at 9600 baud. This value is most important
   // for the XBee. Make sure the baud rate matches the config
   // setting of your XBee.
   XBee.begin(9600);
   Serial.begin(9600);
-  accel.init();
+ // initialize device
+  Serial.println("Initializing IMU device...");
+  CurieIMU.begin();
+  // Set the accelerometer range to 2G
+  CurieIMU.setAccelerometerRange(2);
 
 }
 
 void loop()
 {
 
-  if (accel.available()){
-    //printCalculatedAccelsToXBee();
-    accel.read();
-    printCalculatedAccelsToSerial();
-  }
+  CurieIMU.readAccelerometerScaled(ax, ay, az);
+  printCalculatedAccelsToXBee();
+  printCalculatedAccelsToSerial();
 }
 
 
 void printCalculatedAccelsToSerial()
 {
-    Serial.print(accel.cx, 3);
+    Serial.print(ax, 3);
     Serial.print("\t");
-    Serial.print(accel.cy, 3);
+    Serial.print(ay, 3);
     Serial.print("\t");
-    Serial.print(accel.cz, 3);
+    Serial.print(az, 3);
     Serial.print("\t");
     Serial.println();
 }
 
 void printCalculatedAccelsToXBee()
 {
-    XBee.print(accel.cx, 3);
+    XBee.print(ax, 3);
     XBee.print("\t");
-    XBee.print(accel.cy, 3);
+    XBee.print(ay, 3);
     XBee.print("\t");
-    XBee.print(accel.cz, 3);
+    XBee.print(az, 3);
     XBee.print("\t");
     XBee.println();
 }
