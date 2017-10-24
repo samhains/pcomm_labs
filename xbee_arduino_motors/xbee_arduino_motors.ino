@@ -16,13 +16,18 @@
 #define INPUT_SIZE 11
 #include <Servo.h>
 
-
 // XBee's DOUT (TX) is connected to pin 2 (Arduino's Software RX)
 // XBee's DIN (RX) is connected to pin 3 (Arduino's Software TX)
 SoftwareSerial XBee(2, 3); // RX, TX
-Servo servo;  // create servo object to control a servo
+Servo servo_x1;  // create servo_x1 object to control aservo_x1
+Servo servo_x2;  // create servo_x1 object to control aservo_x1
+Servo servo_y1;  // create servo_x1 object to control aservo_x1
+Servo servo_y2;  // create servo_x1 object to control aservo_x1
 
-int servo_pin = 13;
+int servo_x1_pin = 10;
+int servo_x2_pin = 11;
+int servo_y1_pin = 12;
+int servo_y2_pin = 13;
 
 const byte numChars = 32;
 char receivedChars[numChars]; // an array to store the received data
@@ -58,7 +63,11 @@ void recvWithEndMarker() {
     }
   }
 }
-
+void showNewData() {
+ if (newData == true) {
+   newData = false;
+   }
+}
 void showParsedData() {
  Serial.print("x ");
  Serial.println(accel_x);
@@ -67,37 +76,56 @@ void showParsedData() {
  Serial.print("z ");
  Serial.println(accel_z);
 }
+
 void parseData() {
 
     // split the data into its parts
-
   char * strtokIndx; // this is used by strtok() as an index
-  strtokIndx = strtok(receivedChars, "\t");
-  accel_x = atof(strtokIndx);     // convert this part to a float
-  strtokIndx = strtok(NULL, "\t");
-  accel_y = atof(strtokIndx);     // convert this part to a float
+
+  strtokIndx = strtok(receivedChars,"\t");      // get the first part - the string
+  accel_x = atof(strtokIndx); // copy it to messageFromPC
+
+  strtokIndx = strtok(NULL, "\t"); // this continues where the previous call left off
+  accel_y = atof(strtokIndx);     // convert this part to an integer
+
   strtokIndx = strtok(NULL, "\t");
   accel_z = atof(strtokIndx);     // convert this part to a float
+
 }
 
-  void showNewData() {
-    if (newData == true) {
-      Serial.print("This just in ... ");
-      Serial.println(receivedChars);
-      newData = false;
-    }
-  }
+// void parseData() {
+//
+//     // split the data into its parts
+//
+//   char * strtokIndx; // this is used by strtok() as an index
+//
+//   strtokIndx = strtok(receivedChars, "\t");
+//   accel_x = atof(strtokIndx);     // convert this part to a float
+//
+//   strtokIndx = strtok(NULL, "\t");
+//   accel_y = atof(strtokIndx);     // convert this part to a float
+//
+//   strtokIndx = strtok(NULL, "\t");
+//   accel_z = atof(strtokIndx);     // convert this part to a float
+// }
 
-  void writeToServo(){
-     //int val = analogRead(servo_pin);            // reads the value of the potentiometer (value between 0 and 1023)
-     //val = map(val, 0, 1023, 0, 180);     // scale it to use it with the servo (value between 0 and 180)
-     //servo.write(val);                  // sets the servo position according to the scaled value
-     //delay(15);                           // waits for the servo to get there
+
+  void writeToServo(float accel, Servo servo, int minRange, int maxRange ){
+     //int val = analogRead(servo_x1_pin);            // reads the value of the potentiometer (value between 0 and 1023)
+     int  accel_int  =  accel * 100;
+     int val = map(accel_int, -100, 100, minRange, maxRange);     // scale it to use it with the servo_x1 (value between 0 and 180)
+     val = constrain(val, 0.0, 180.0);
+     Serial.println(val);
+     servo.write(val);                  // sets the servo_x1 position according to the scaled value
+     delay(100);
   }
 
   void setup()
   {
-    servo.attach(servo_pin);
+    servo_x1.attach(servo_x1_pin);
+    // servo_x2.attach(servo_x2_pin);
+    // servo_y1.attach(servo_y1_pin);
+    // servo_y2.attach(servo_y2_pin);
     // Set up both ports at 9600 baud. This value is most important
     // for the XBee. Make sure the baud rate matches the config
     // setting of your XBee.
@@ -112,10 +140,16 @@ void parseData() {
     if (XBee.available())
 
     {
+      // Serial.println(XBee.read());
       recvWithEndMarker();
+      showNewData();
+      // Serial.println(receivedChars);
       parseData();
       showParsedData();
-      //writeToServo();
+      // writeToServo(accel_x, servo_x1, 0, 180);
+      // writeToServo(accel_y, servo_y1, 0, 180);
+      // writeToServo(accel_x, servo_x2, 180, 0);
+      // writeToServo(accel_x, servo_y2, 180, 0);
 
     }
   }

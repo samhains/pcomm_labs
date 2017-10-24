@@ -1,42 +1,35 @@
 /******************************************************************************
-  MMA8452Q_Basic.ino
-  SFE_MMA8452Q Library Basic Example Sketch
-  Jim Lindblom @ SparkFun Electronics
-  Original Creation Date: June 3, 2014
-  https://github.com/sparkfun/MMA8452_Accelerometer
+MMA8452Q_Basic.ino
+SFE_MMA8452Q Library Basic Example Sketch
+Jim Lindblom @ SparkFun Electronics
+Original Creation Date: June 3, 2014
+https://github.com/sparkfun/MMA8452_Accelerometer
 
-  This sketch uses the SFE_MMA8452Q library to initialize the
-  accelerometer, and stream values from it.
+This sketch uses the SFE_MMA8452Q library to initialize the
+accelerometer, and stream values from it.
 
-  Hardware hookup:
+Hardware hookup:
   Arduino --------------- MMA8452Q Breakout
     3.3V  ---------------     3.3V
     GND   ---------------     GND
   SDA (A4) --\/330 Ohm\/--    SDA
   SCL (A5) --\/330 Ohm\/--    SCL
 
-  The MMA8452Q is a 3.3V max sensor, so you'll need to do some
-  level-shifting between the Arduino and the breakout. Series
-  resistors on the SDA and SCL lines should do the trick.
+The MMA8452Q is a 3.3V max sensor, so you'll need to do some
+level-shifting between the Arduino and the breakout. Series
+resistors on the SDA and SCL lines should do the trick.
 
-  Development environment specifics:
-  IDE: Arduino 1.0.5
-  Hardware Platform: Arduino Uno
+Development environment specifics:
+	IDE: Arduino 1.0.5
+	Hardware Platform: Arduino Uno
 
-  This code is beerware; if you see me (or any other SparkFun employee) at the
-  local, and you've found our code helpful, please buy us a round!
+This code is beerware; if you see me (or any other SparkFun employee) at the
+local, and you've found our code helpful, please buy us a round!
 
-  Distributed as-is; no warranty is given.
+Distributed as-is; no warranty is given.
 ******************************************************************************/
 #include <Wire.h> // Must include Wire library for I2C
 #include <SFE_MMA8452Q.h> // Includes the SFE_MMA8452Q library
-
-#include <SoftwareSerial.h>
-
-int bluetoothTx = 2;  // TX-O pin of bluetooth mate, Arduino D2
-int bluetoothRx = 3;  // RX-I pin of bluetooth mate, Arduino D3
-
-SoftwareSerial bluetooth(bluetoothTx, bluetoothRx);
 
 // Begin using the library by creating an instance of the MMA8452Q
 //  class. We'll call it "accel". That's what we'll reference from
@@ -49,7 +42,6 @@ void setup()
 {
   Serial.begin(9600);
   Serial.println("MMA8452Q Test Code!");
-  bluetooth.begin(115200);
 
   // Choose your adventure! There are a few options when it comes
   // to initializing the MMA8452Q:
@@ -68,28 +60,6 @@ void setup()
   //     ODR_6, or ODR_1.
   //     Sets to 800, 400, 200, 100, 50, 12.5, 6.25, or 1.56 Hz.
   //accel.init(SCALE_8G, ODR_6);
-  bluetooth.print("$");  // Print three times individually
-  bluetooth.print("$");
-  bluetooth.print("$");  // Enter command mode
-  delay(100);  // Short delay, wait for the Mate to send back CMD
-  bluetooth.println("U,9600,N");  // Temporarily Change the baudrate to 9600, no parity
-  // 115200 can be too fast at times for NewSoftSerial to relay the data reliably
-  //bluetooth.println("C,
-
-  bluetooth.begin(9600);  // Start bluetooth serial at 9600
-  bluetooth.println("C,201510154325");
-
-}
-
-void printCalculatedAccelsToBluetooth()
-{
-    bluetooth.print(accel.cx, 3);
-    bluetooth.print("\t");
-    bluetooth.print(accel.cy, 3);
-    bluetooth.print("\t");
-    bluetooth.print(accel.cz, 3);
-    bluetooth.print("\t");
-    bluetooth.println();
 }
 
 // The loop function will simply check for new data from the
@@ -101,7 +71,6 @@ void loop()
   if (accel.available())
   {
     // First, use accel.read() to read the new variables:
-    //Serial.println("acceleromoter works!");
     accel.read();
 
     // accel.read() will update two sets of variables.
@@ -112,16 +81,15 @@ void loop()
     //   are in units of g's.
     // Check the two function declarations below for an example
     // of how to use these variables.
-    //printCalculatedAccels();
-    printCalculatedAccelsToBluetooth();
+    printCalculatedAccels();
     //printAccels(); // Uncomment to print digital readings
 
     // The library also supports the portrait/landscape detection
     //  of the MMA8452Q. Check out this function declaration for
     //  an example of how to use that.
-    //printOrientation();
+    printOrientation();
 
-    //Serial.println(); // Print new line every time.
+    Serial.println(); // Print new line every time.
   }
 }
 
@@ -153,8 +121,6 @@ void printCalculatedAccels()
   Serial.print("\t");
 }
 
-
-
 // This function demonstrates how to use the accel.readPL()
 // function, which reads the portrait/landscape status of the
 // sensor.
@@ -167,22 +133,20 @@ void printOrientation()
   byte pl = accel.readPL();
   switch (pl)
   {
-    case PORTRAIT_U:
-      Serial.print("Portrait Up");
-      //bluetooth.println("a");
-      break;
-    case PORTRAIT_D:
-      Serial.print("Portrait Down");
-      //bluetooth.println("b");
-      break;
-    case LANDSCAPE_R:
-      Serial.print("Landscape Right");
-      break;
-    case LANDSCAPE_L:
-      Serial.print("Landscape Left");
-      break;
-    case LOCKOUT:
-      Serial.print("Flat");
-      break;
+  case PORTRAIT_U:
+    Serial.print("Portrait Up");
+    break;
+  case PORTRAIT_D:
+    Serial.print("Portrait Down");
+    break;
+  case LANDSCAPE_R:
+    Serial.print("Landscape Right");
+    break;
+  case LANDSCAPE_L:
+    Serial.print("Landscape Left");
+    break;
+  case LOCKOUT:
+    Serial.print("Flat");
+    break;
   }
 }

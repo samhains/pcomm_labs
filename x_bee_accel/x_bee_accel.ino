@@ -18,19 +18,19 @@ MMA8452Q accel;
 
 // XBee's DOUT (TX) is connected to pin 2 (Arduino's Software RX)
 // XBee's DIN (RX) is connected to pin 3 (Arduino's Software TX)
-SoftwareSerial XBee(2, 3); // RX, TX
+SoftwareSerial XBee(11, 12); // RX, TX
 
 
 void setup()
 {
- 
+
   // Set up both ports at 9600 baud. This value is most important
   // for the XBee. Make sure the baud rate matches the config
   // setting of your XBee.
   XBee.begin(9600);
   Serial.begin(9600);
   accel.init();
-  
+
 }
 
 void loop()
@@ -38,19 +38,21 @@ void loop()
   if (accel.available()){
     accel.read();
     printCalculatedAccelsToXBee();
-  }
-
-  if (Serial.available())
-  
-  { // If data comes in from serial monitor, send it out to XBee
-    XBee.write(Serial.read());
-  }
-  if (XBee.available())
-  { // If data comes in from XBee, send it out to serial monitor
-    Serial.write(XBee.read());
+    // printCalculatedAccelsToSerial();
   }
 }
 
+
+void printCalculatedAccelsToSerial()
+{
+    Serial.print(accel.cx, 3);
+    Serial.print("\t");
+    Serial.print(accel.cy, 3);
+    Serial.print("\t");
+    Serial.print(accel.cz, 3);
+    Serial.print("\t");
+    Serial.println();
+}
 
 void printCalculatedAccelsToXBee()
 {

@@ -23,7 +23,7 @@ MMA8452Q accel;
 
 void setup()
 {
- 
+
   // Set up both ports at 9600 baud. This value is most important
   // for the XBee. Make sure the baud rate matches the config
   // setting of your XBee.
@@ -37,9 +37,9 @@ void loop()
 {
 
   if (accel.available()){
-    //printCalculatedAccelsToXBee();
     accel.read();
-    printCalculatedAccelsToSerial();
+    printCalculatedAccelsToXBee();
+    // printCalculatedAccelsToSerial();
   }
 }
 
